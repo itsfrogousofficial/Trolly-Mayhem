@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://bbykxhayaujuw"]
+
+[ext_resource type="ArrayMesh" uid="uid://cimb41amh4cql" path="res://scenes/maps/map_one.obj" id="1_1ccd8"]
+
+[node name="MapOne" type="Node3D" unique_id=6051591]
+
+[node name="Untitled" type="MeshInstance3D" parent="." unique_id=1888969248]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5887527, -1.4365273, -12.610725)
+mesh = ExtResource("1_1ccd8")
+
+[node name="Untitled2" type="MeshInstance3D" parent="." unique_id=1195540848]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5887527, -1.4365273, 11.470932)
+mesh = ExtResource("1_1ccd8")
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=586783810]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=269483863]
