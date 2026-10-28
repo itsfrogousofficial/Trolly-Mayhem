@@ -17,11 +17,20 @@ const GAME_SCENE_FALLBACK_PATH: String = "res://maps/map_one.tscn"
 const STARTER_TROLLEY_PATH: String = "res://assets/models/trollys/starter/starter.glb"
 const BACK_BUTTON_IMAGE: String = "button_back.png"
 
+# NEW: script that lets the player drive the trolley around the map.
+const DRIVE_CONTROLLER_PATH: String = "res://scenes/menus/fly_controller.gd"
+
 # Names the game looks for in the map to decide where the trolley appears.
 # Add a Marker3D with one of these names to map_one.tscn.
 const TROLLEY_SPAWN_NAMES: Array[String] = [
 	"TrolleySpawn", "TrolleySpawnPoint", "PlayerSpawn", "SpawnPoint", "Spawn", "Start"
 ]
+
+# NEW: node names treated as the base plate (ground). Matching ignores upper/lower
+# case, spaces, underscores and dashes, so "Base_Plate" and "base plate" both match
+# "baseplate". Each matching mesh in the map gets a solid collision shape.
+# Add your own node name here if the base plate is called something else.
+const BASE_PLATE_NAMES: Array[String] = ["baseplate", "ground", "floor"]
 
 # Startup logo timing
 const GODOT_LOGO_DURATION: float = 1.5
@@ -1112,6 +1121,8 @@ func start_game() -> void:
 	garage_publish_meta()
 	get_tree().root.set_meta("selected_season", level_current_season)
 	get_tree().root.set_meta("selected_level", level_selected_number)
+	# NEW: the right-click look around in the game uses the Mouse Sensitivity slider.
+	get_tree().root.set_meta("mouse_sensitivity", settings_mouse_sensitivity)
 
 	# 4. Create the map and the trolley.
 	var map_instance: Node = map_scene.instantiate()
@@ -1145,6 +1156,9 @@ func start_game() -> void:
 	var tree := get_tree()
 	tree.root.add_child(map_instance)
 
+	# NEW: make the base plate solid so the trolley cannot fly through it.
+	_ensure_base_plate_collision(map_instance)
+
 	trolley_instance.name = "PlayerTrolley"
 	map_instance.add_child(trolley_instance)
 
@@ -1169,6 +1183,22 @@ func start_game() -> void:
 			+ "). The trolley was placed at the map origin."
 		)
 
+	# NEW: driving. W/S to drive, A/D to steer. This is added after the trolley
+	# is placed, so driving starts from the spawn.
+	if ResourceLoader.exists(DRIVE_CONTROLLER_PATH):
+		var drive_script := load(DRIVE_CONTROLLER_PATH) as Script
+		if drive_script != null:
+			var drive_controller := Node3D.new()
+			drive_controller.name = "DriveController"
+			drive_controller.set_script(drive_script)
+			# Give it the trolley BEFORE it enters the tree.
+			drive_controller.set("trolley", trolley_instance as Node3D)
+			map_instance.add_child(drive_controller)
+		else:
+			push_warning("Drive controller failed to load: " + DRIVE_CONTROLLER_PATH)
+	else:
+		push_warning("Drive controller script not found: " + DRIVE_CONTROLLER_PATH)
+
 	# 6. Make the map the active scene and remove the menu.
 	tree.current_scene = map_instance
 	queue_free()
@@ -1182,6 +1212,83 @@ func _find_trolley_spawn(map_root: Node) -> Node3D:
 			return found as Node3D
 
 	return null
+
+
+# NEW: gives every base plate mesh in the map a solid collision shape.
+# Meshes that already have collision (a StaticBody3D child, or a body parent)
+# are left alone.
+func _ensure_base_plate_collision(map_root: Node) -> void:
+	var meshes: Array[MeshInstance3D] = []
+	_collect_base_plate_meshes(map_root, false, meshes)
+
+	if meshes.is_empty():
+		push_warning(
+			"No base plate found in the map (looked for node names containing: "
+			+ ", ".join(BASE_PLATE_NAMES)
+			+ "). Add your node's name to BASE_PLATE_NAMES in main_menu.gd."
+		)
+		return
+
+	for mesh in meshes:
+		if mesh.get_parent() is CollisionObject3D:
+			continue
+
+		var already_solid := false
+		for child in mesh.get_children():
+			if child is CollisionObject3D:
+				already_solid = true
+				break
+
+		if already_solid:
+			continue
+
+		# Solid from both sides, so nothing can fall through the plate.
+		var shape: ConcavePolygonShape3D = mesh.mesh.create_trimesh_shape()
+		if shape == null:
+			push_warning("Could not build collision for: " + str(mesh.name))
+			continue
+
+		shape.backface_collision = true
+
+		var solid_body := StaticBody3D.new()
+		solid_body.name = str(mesh.name) + "_Collision"
+
+		var solid_shape := CollisionShape3D.new()
+		solid_shape.shape = shape
+		solid_body.add_child(solid_shape)
+
+		mesh.add_child(solid_body)
+
+
+func _collect_base_plate_meshes(
+	node: Node,
+	parent_matched: bool,
+	result: Array[MeshInstance3D]
+) -> void:
+	for child in node.get_children():
+		if child.name == "PlayerTrolley":
+			continue
+
+		var matched: bool = parent_matched or _is_base_plate_name(str(child.name))
+
+		if matched and child is MeshInstance3D:
+			var mesh_node := child as MeshInstance3D
+			if mesh_node.mesh != null:
+				result.append(mesh_node)
+
+		_collect_base_plate_meshes(child, matched, result)
+
+
+func _is_base_plate_name(node_name: String) -> bool:
+	var cleaned: String = (
+		node_name.to_lower().replace("_", "").replace(" ", "").replace("-", "")
+	)
+
+	for wanted in BASE_PLATE_NAMES:
+		if cleaned.contains(wanted):
+			return true
+
+	return false
 
 
 #------------------
@@ -2048,7 +2155,12 @@ func _settings_build_page(page: VBoxContainer) -> void:
 			)
 
 			var controls_note := Label.new()
-			controls_note.text = "Key bindings can be added when gameplay controls are implemented."
+			# CHANGED: describes the driving controls.
+			controls_note.text = (
+				"Driving: W / S to drive and reverse, A / D to steer, "
+				+ "Space for the handbrake, Shift to boost, hold right-click and move the "
+				+ "mouse to look around, Backspace to reset the trolley."
+			)
 			controls_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			page.add_child(controls_note)
 

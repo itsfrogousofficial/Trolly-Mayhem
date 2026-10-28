@@ -1,17 +1,34 @@
 [gd_scene format=3 uid="uid://bbykxhayaujuw"]
 
 [ext_resource type="ArrayMesh" uid="uid://cimb41amh4cql" path="res://scenes/maps/map_one.obj" id="1_1ccd8"]
+[ext_resource type="ArrayMesh" uid="uid://cmw4ngm4ie1ar" path="res://scenes/maps/PineTree1.obj" id="2_mq464"]
 
 [node name="MapOne" type="Node3D" unique_id=6051591]
 
-[node name="Untitled" type="MeshInstance3D" parent="." unique_id=1888969248]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5887527, -1.4365273, -12.610725)
+[node name="BasePlate" type="MeshInstance3D" parent="." unique_id=1888969248]
+transform = Transform3D(0.0022241613, 0, -0.99999756, 0, 1, 0, 0.99999756, 0, 0.0022241613, 0.6433983, -1.4365273, -13.077737)
 mesh = ExtResource("1_1ccd8")
 
-[node name="Untitled2" type="MeshInstance3D" parent="." unique_id=1195540848]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5887527, -1.4365273, 11.470932)
+[node name="BasePlate3" type="MeshInstance3D" parent="." unique_id=1855798649]
+transform = Transform3D(0.0022241613, 0, -0.99999756, 0, 1, 0, 0.99999756, 0, 0.0022241613, 0.27103424, -14.010956, -114.18112)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate5" type="MeshInstance3D" parent="." unique_id=117091087]
+transform = Transform3D(0.42214614, 0, -0.9065278, 0, 1, 0, 0.9065278, 0, 0.42214614, -7.31765, -14.010956, -154.12512)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate6" type="MeshInstance3D" parent="." unique_id=632655700]
+transform = Transform3D(0.3988437, -0.09753945, -0.91181684, 0.25238666, 0.96760195, 0.006891174, 0.8816035, -0.23287882, 0.41053963, -29.383469, -20.82935, -201.89435)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate2" type="MeshInstance3D" parent="." unique_id=1383935564]
+transform = Transform3D(0.0022241613, 0, -0.99999756, 0.24062404, 0.9706184, 0.000535188, 0.97061604, -0.24062464, 0.0021588118, 0.423419, -7.8998413, -65.77727)
 mesh = ExtResource("1_1ccd8")
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=586783810]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=269483863]
+
+[node name="PineTree1" type="MeshInstance3D" parent="." unique_id=653113343]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.494191, 0, -142.7959)
+mesh = ExtResource("2_mq464")

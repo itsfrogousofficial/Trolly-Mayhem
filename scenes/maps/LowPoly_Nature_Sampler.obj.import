@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://dyk85o3gykran"
+path="res://.godot/imported/LowPoly_Nature_Sampler.obj-c69478e8ea84715c61ac3e1b852b146e.mesh"
+
+[deps]
+
+files=["res://.godot/imported/LowPoly_Nature_Sampler.obj-c69478e8ea84715c61ac3e1b852b146e.mesh"]
+
+source_file="res://scenes/maps/LowPoly_Nature_Sampler.obj"
+dest_files=["res://.godot/imported/LowPoly_Nature_Sampler.obj-c69478e8ea84715c61ac3e1b852b146e.mesh", "res://.godot/imported/LowPoly_Nature_Sampler.obj-c69478e8ea84715c61ac3e1b852b146e.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false
