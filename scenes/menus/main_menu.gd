@@ -1148,6 +1148,16 @@ func start_game() -> void:
 	trolley_instance.name = "PlayerTrolley"
 	map_instance.add_child(trolley_instance)
 
+	# Pause menu: press Esc in the game for CONTINUE / QUIT.
+	var pause_script := load("res://scenes/menus/pause_menu.gd") as Script
+	if pause_script != null:
+		var pause_menu := CanvasLayer.new()
+		pause_menu.name = "PauseMenu"
+		pause_menu.set_script(pause_script)
+		map_instance.add_child(pause_menu)
+	else:
+		push_warning("Pause menu script not found: res://scenes/menus/pause_menu.gd")
+
 	var spawn_point: Node3D = _find_trolley_spawn(map_instance)
 
 	if spawn_point != null:
