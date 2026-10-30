@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://cvmq21v65revm"
 path.s3tc="res://.godot/imported/starter_Red molded plastic base colour.png-3b96a56bd8673287d48e6c9b053d93ea.s3tc.ctex"
+path.etc2="res://.godot/imported/starter_Red molded plastic base colour.png-3b96a56bd8673287d48e6c9b053d93ea.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/trollys/starter/starter_Red molded plastic base colour.png"
-dest_files=["res://.godot/imported/starter_Red molded plastic base colour.png-3b96a56bd8673287d48e6c9b053d93ea.s3tc.ctex"]
+dest_files=["res://.godot/imported/starter_Red molded plastic base colour.png-3b96a56bd8673287d48e6c9b053d93ea.s3tc.ctex", "res://.godot/imported/starter_Red molded plastic base colour.png-3b96a56bd8673287d48e6c9b053d93ea.etc2.ctex"]
 
 [params]
 

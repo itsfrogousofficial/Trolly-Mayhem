@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://cl5iygtjqtbag"
 path.s3tc="res://.godot/imported/starter_Polished trolley steel base colour.png-663def181d618b12896d726b7ccd40d5.s3tc.ctex"
+path.etc2="res://.godot/imported/starter_Polished trolley steel base colour.png-663def181d618b12896d726b7ccd40d5.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/trollys/starter/starter_Polished trolley steel base colour.png"
-dest_files=["res://.godot/imported/starter_Polished trolley steel base colour.png-663def181d618b12896d726b7ccd40d5.s3tc.ctex"]
+dest_files=["res://.godot/imported/starter_Polished trolley steel base colour.png-663def181d618b12896d726b7ccd40d5.s3tc.ctex", "res://.godot/imported/starter_Polished trolley steel base colour.png-663def181d618b12896d726b7ccd40d5.etc2.ctex"]
 
 [params]
 

@@ -1,6 +1,9 @@
 # res://scenes/menus/main_menu.gd  (attach to your existing menu root Control, same as now)
 extends Control
 
+# Emitted when the player has successfully logged in or signed up.
+signal auth_succeeded
+
 const BACKGROUND_PATH: String = "res://assets/images/background1.png"
 const CREDITS_BACKGROUND_PATH: String = "res://assets/images/background2.jpg"
 const LOGO_PATH: String = "res://assets/images/logo.png"
@@ -14,11 +17,20 @@ const GAME_SCENE_FALLBACK_PATH: String = "res://maps/map_one.tscn"
 const STARTER_TROLLEY_PATH: String = "res://assets/models/trollys/starter/starter.glb"
 const BACK_BUTTON_IMAGE: String = "button_back.png"
 
+# NEW: script that lets the player drive the trolley around the map.
+const DRIVE_CONTROLLER_PATH: String = "res://scenes/menus/fly_controller.gd"
+
 # Names the game looks for in the map to decide where the trolley appears.
 # Add a Marker3D with one of these names to map_one.tscn.
 const TROLLEY_SPAWN_NAMES: Array[String] = [
 	"TrolleySpawn", "TrolleySpawnPoint", "PlayerSpawn", "SpawnPoint", "Spawn", "Start"
 ]
+
+# NEW: node names treated as the base plate (ground). Matching ignores upper/lower
+# case, spaces, underscores and dashes, so "Base_Plate" and "base plate" both match
+# "baseplate". Each matching mesh in the map gets a solid collision shape.
+# Add your own node name here if the base plate is called something else.
+const BASE_PLATE_NAMES: Array[String] = ["baseplate", "ground", "floor"]
 
 # Startup logo timing
 const GODOT_LOGO_DURATION: float = 1.5
@@ -66,26 +78,55 @@ var credits_panel: Control
 # INITIALISE MENU
 #------------------
 
+
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
-	# Restore the trolley and colour applied in a previous session.
-	garage_load_saved()
+	var root := get_tree().root
+
+	# Load the accounts stored on this device.
+	_accounts_load()
+
+	# Restore the logged-in account if the menu is being reopened
+	# during the same game session.
+	if root.has_meta("current_username"):
+		current_user = str(root.get_meta("current_username"))
 
 	create_background()
 	create_logo()
 	create_menu()
 
+	# Keep the menu hidden until initialisation is complete.
+	menu_layout.hide()
 	menu_layout.modulate.a = 0.0
 	logo.modulate.a = 0.0
 
 	await get_tree().process_frame
-	await play_startup_logos()
 
+	# Play the startup logos only once per game launch.
+	# Root metadata survives when the menu scene is recreated.
+	if not root.has_meta("startup_sequence_played"):
+		root.set_meta("startup_sequence_played", true)
+		await play_startup_logos()
+
+	_place_logo_top()
 	logo.modulate.a = 1.0
 
 	create_music_player()
+
+	# Only show sign-in if nobody is logged in.
+	# Returning from a map should keep the existing session.
+	if current_user == "":
+		show_auth_screen()
+		await auth_succeeded
+
+	# Restore this account's saved trolley and colour.
+	garage_load_saved()
+	create_account_bar()
+
+	menu_layout.show()
 	await animate_intro()
+
 
 
 #------------------
@@ -125,6 +166,582 @@ func _resolve_map_path() -> String:
 		return GAME_SCENE_FALLBACK_PATH
 
 	return ""
+
+
+# Puts the logo at the top centre of the screen.
+func _place_logo_top() -> void:
+	var screen_size: Vector2 = get_viewport_rect().size
+	logo.position = Vector2((screen_size.x - LOGO_SIZE.x) / 2.0, 15.0)
+
+
+# ============================================================
+# ACCOUNTS (sign up / log in) - stored on this device
+# ============================================================
+#
+# Accounts are saved in user://trolley_mayhem_accounts.cfg
+# Passwords are NEVER stored. Only a random salt and a hash of
+# (salt + password) is saved, so the file does not reveal passwords.
+#
+# Each account also gets its own save file:
+#   user://trolley_mayhem_save_<username>.cfg
+# Use user_data_set() / user_data_get() from anywhere in this script
+# to save and load game data for the logged-in account.
+#
+# Other scripts can read who is logged in with:
+#   get_tree().root.get_meta("current_username")
+
+const ACCOUNTS_PATH: String = "user://trolley_mayhem_accounts.cfg"
+const USER_SAVE_PREFIX: String = "user://trolley_mayhem_save_"
+const USERNAME_MIN: int = 3
+const USERNAME_MAX: int = 16
+const PASSWORD_MIN: int = 6
+const PASSWORD_MAX: int = 64
+const HASH_ROUNDS: int = 2000
+
+var accounts_config: ConfigFile = ConfigFile.new()
+var current_user: String = ""
+
+
+func _accounts_load() -> void:
+	# It is fine if the file does not exist yet (first launch).
+	accounts_config.load(ACCOUNTS_PATH)
+
+
+# Usernames are matched ignoring upper/lower case, so "Bob" and "bob"
+# count as the same name.
+func _account_key(username: String) -> String:
+	return username.strip_edges().to_lower()
+
+
+func _account_section(username: String) -> String:
+	return "user:" + _account_key(username)
+
+
+func account_exists(username: String) -> bool:
+	return accounts_config.has_section(_account_section(username))
+
+
+# Returns "" if the username is allowed, otherwise the reason it is not.
+func account_validate_username(username: String) -> String:
+	if username.length() < USERNAME_MIN:
+		return "Username must be at least " + str(USERNAME_MIN) + " characters."
+
+	if username.length() > USERNAME_MAX:
+		return "Username can be at most " + str(USERNAME_MAX) + " characters."
+
+	var regex := RegEx.create_from_string("^[A-Za-z0-9_]+$")
+	if regex.search(username) == null:
+		return "Username can only use letters, numbers and underscores."
+
+	return ""
+
+
+# Returns "" if the password is allowed, otherwise the reason it is not.
+func account_validate_password(password: String) -> String:
+	if password.length() < PASSWORD_MIN:
+		return "Password must be at least " + str(PASSWORD_MIN) + " characters."
+
+	if password.length() > PASSWORD_MAX:
+		return "Password can be at most " + str(PASSWORD_MAX) + " characters."
+
+	return ""
+
+
+func _account_hash(password: String, salt: String) -> String:
+	var hashed: String = (salt + password).sha256_text()
+
+	for _round in HASH_ROUNDS:
+		hashed = (hashed + salt + password).sha256_text()
+
+	return hashed
+
+
+# Creates a new account and logs it in.
+# Returns {"ok": bool, "message": String}
+func account_create(username: String, password: String) -> Dictionary:
+	username = username.strip_edges()
+
+	var username_error: String = account_validate_username(username)
+	if username_error != "":
+		return {"ok": false, "message": username_error}
+
+	var password_error: String = account_validate_password(password)
+	if password_error != "":
+		return {"ok": false, "message": password_error}
+
+	if account_exists(username):
+		return {"ok": false, "message": "That username is already taken."}
+
+	var salt: String = Crypto.new().generate_random_bytes(16).hex_encode()
+	var section: String = _account_section(username)
+
+	accounts_config.set_value(section, "display_name", username)
+	accounts_config.set_value(section, "salt", salt)
+	accounts_config.set_value(section, "hash", _account_hash(password, salt))
+	accounts_config.set_value(section, "created", Time.get_datetime_string_from_system())
+
+	var error: int = accounts_config.save(ACCOUNTS_PATH)
+	if error != OK:
+		# Undo, so a failed save does not leave a half-made account in memory.
+		accounts_config.erase_section(section)
+		return {
+			"ok": false,
+			"message": "Could not save the account (error " + str(error) + ")."
+		}
+
+	_account_set_current(username)
+	return {"ok": true, "message": "Account created!"}
+
+
+# Checks the username and password and logs in.
+# Returns {"ok": bool, "message": String}
+func account_login(username: String, password: String) -> Dictionary:
+	username = username.strip_edges()
+
+	if username == "" or password == "":
+		return {"ok": false, "message": "Enter your username and password."}
+
+	# The same message is used for "no such user" and "wrong password".
+	var failed := {"ok": false, "message": "Incorrect username or password."}
+
+	if not account_exists(username):
+		return failed
+
+	var section: String = _account_section(username)
+	var salt: String = str(accounts_config.get_value(section, "salt", ""))
+	var stored_hash: String = str(accounts_config.get_value(section, "hash", ""))
+
+	if salt == "" or stored_hash == "":
+		return failed
+
+	if _account_hash(password, salt) != stored_hash:
+		return failed
+
+	var display_name: String = str(
+		accounts_config.get_value(section, "display_name", username)
+	)
+	_account_set_current(display_name)
+	return {"ok": true, "message": "Logged in!"}
+
+
+func _account_set_current(display_name: String) -> void:
+	current_user = display_name
+	get_tree().root.set_meta("current_username", current_user)
+
+	# Remember the name so it is filled in next time.
+	accounts_config.set_value("meta", "last_username", current_user)
+	accounts_config.save(ACCOUNTS_PATH)
+
+
+func account_last_username() -> String:
+	return str(accounts_config.get_value("meta", "last_username", ""))
+
+
+# ------------------------------------------------------------
+# PER-ACCOUNT SAVE DATA
+# ------------------------------------------------------------
+
+func _user_save_path() -> String:
+	return USER_SAVE_PREFIX + _account_key(current_user) + ".cfg"
+
+
+# Saves one value for the logged-in account.
+# Example: user_data_set("progress", "winter_level", 3)
+func user_data_set(section: String, key: String, value: Variant) -> void:
+	if current_user == "":
+		push_warning("Not logged in, nothing was saved.")
+		return
+
+	var config := ConfigFile.new()
+	config.load(_user_save_path()) # OK if it does not exist yet.
+	config.set_value(section, key, value)
+
+	var error: int = config.save(_user_save_path())
+	if error != OK:
+		push_warning("Could not save account data. Error code: " + str(error))
+
+
+# Loads one value for the logged-in account (or the default).
+# Example: user_data_get("progress", "winter_level", 1)
+func user_data_get(section: String, key: String, default_value: Variant = null) -> Variant:
+	if current_user == "":
+		return default_value
+
+	var config := ConfigFile.new()
+	if config.load(_user_save_path()) != OK:
+		return default_value
+
+	return config.get_value(section, key, default_value)
+
+
+# ------------------------------------------------------------
+# LOG IN / SIGN UP SCREEN
+# ------------------------------------------------------------
+
+var auth_panel: Control
+var auth_mode: String = "login"
+var auth_busy: bool = false
+
+var auth_title_label: Label
+var auth_username_edit: LineEdit
+var auth_password_edit: LineEdit
+var auth_confirm_edit: LineEdit
+var auth_confirm_box: VBoxContainer
+var auth_message_label: Label
+var auth_submit_button: Button
+var auth_login_tab: Button
+var auth_signup_tab: Button
+
+
+func show_auth_screen() -> void:
+	if is_instance_valid(auth_panel):
+		auth_panel.queue_free()
+
+	if is_instance_valid(menu_layout):
+		menu_layout.hide()
+
+	_place_logo_top()
+	logo.show()
+
+	auth_busy = false
+	auth_mode = "login"
+
+	auth_panel = Control.new()
+	auth_panel.name = "AuthPanel"
+	auth_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	auth_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	auth_panel.z_index = 300
+	add_child(auth_panel)
+
+		# Keeps the card underneath the logo.
+	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_top", int(LOGO_SIZE.y + 30.0))
+	margin.add_theme_constant_override("margin_bottom", 20)
+	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	auth_panel.add_child(margin)
+
+	# Lets the card scroll when it is taller than the space available.
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	margin.add_child(scroll)
+
+	var center := CenterContainer.new()
+	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	center.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	scroll.add_child(center)
+
+	# The card
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(440, 0)
+
+	var card_style := StyleBoxFlat.new()
+	card_style.bg_color = Color(0.055, 0.055, 0.07, 0.94)
+	card_style.set_corner_radius_all(14)
+	card_style.set_border_width_all(1)
+	card_style.border_color = Color("#f97316")
+	card_style.set_content_margin_all(24)
+	card.add_theme_stylebox_override("panel", card_style)
+	center.add_child(card)
+
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 12)
+	card.add_child(box)
+
+
+	# Tabs: LOG IN / SIGN UP
+	var tab_group := ButtonGroup.new()
+	var tabs := HBoxContainer.new()
+	tabs.add_theme_constant_override("separation", 10)
+	box.add_child(tabs)
+
+	auth_login_tab = Button.new()
+	auth_login_tab.text = "LOG IN"
+	auth_login_tab.toggle_mode = true
+	auth_login_tab.button_group = tab_group
+	auth_login_tab.button_pressed = true
+	auth_login_tab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	auth_login_tab.custom_minimum_size.y = 42
+	auth_login_tab.pressed.connect(_auth_set_mode.bind("login"))
+	tabs.add_child(auth_login_tab)
+
+	auth_signup_tab = Button.new()
+	auth_signup_tab.text = "SIGN UP"
+	auth_signup_tab.toggle_mode = true
+	auth_signup_tab.button_group = tab_group
+	auth_signup_tab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	auth_signup_tab.custom_minimum_size.y = 42
+	auth_signup_tab.pressed.connect(_auth_set_mode.bind("signup"))
+	tabs.add_child(auth_signup_tab)
+
+	# Title
+	auth_title_label = Label.new()
+	auth_title_label.text = "WELCOME BACK"
+	auth_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	auth_title_label.add_theme_font_size_override("font_size", 24)
+	auth_title_label.add_theme_color_override("font_color", Color("#f97316"))
+	box.add_child(auth_title_label)
+
+	# Username
+	var username_label := Label.new()
+	username_label.text = "Username"
+	box.add_child(username_label)
+
+	auth_username_edit = LineEdit.new()
+	auth_username_edit.placeholder_text = "Enter your username"
+	auth_username_edit.max_length = USERNAME_MAX
+	auth_username_edit.custom_minimum_size.y = 40
+	auth_username_edit.text = account_last_username()
+	auth_username_edit.text_changed.connect(_auth_on_username_changed)
+	auth_username_edit.text_submitted.connect(_auth_username_submitted)
+	box.add_child(auth_username_edit)
+
+	# Password
+	var password_label := Label.new()
+	password_label.text = "Password"
+	box.add_child(password_label)
+
+	auth_password_edit = LineEdit.new()
+	auth_password_edit.placeholder_text = "Enter your password"
+	auth_password_edit.secret = true
+	auth_password_edit.max_length = PASSWORD_MAX
+	auth_password_edit.custom_minimum_size.y = 40
+	auth_password_edit.text_submitted.connect(_auth_password_submitted)
+	box.add_child(auth_password_edit)
+
+	# Confirm password (sign up only)
+	auth_confirm_box = VBoxContainer.new()
+	auth_confirm_box.add_theme_constant_override("separation", 6)
+	auth_confirm_box.visible = false
+	box.add_child(auth_confirm_box)
+
+	var confirm_label := Label.new()
+	confirm_label.text = "Confirm password"
+	auth_confirm_box.add_child(confirm_label)
+
+	auth_confirm_edit = LineEdit.new()
+	auth_confirm_edit.placeholder_text = "Type your password again"
+	auth_confirm_edit.secret = true
+	auth_confirm_edit.max_length = PASSWORD_MAX
+	auth_confirm_edit.custom_minimum_size.y = 40
+	auth_confirm_edit.text_submitted.connect(_auth_text_submit)
+	auth_confirm_box.add_child(auth_confirm_edit)
+
+	# Show password
+	var show_password := CheckBox.new()
+	show_password.text = "Show password"
+	show_password.toggled.connect(_auth_on_show_password_toggled)
+	box.add_child(show_password)
+
+	# Message (errors / availability / success)
+	auth_message_label = Label.new()
+	auth_message_label.text = ""
+	auth_message_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	auth_message_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	auth_message_label.custom_minimum_size.y = 44
+	box.add_child(auth_message_label)
+
+	# Submit
+	auth_submit_button = Button.new()
+	auth_submit_button.text = "LOG IN"
+	auth_submit_button.custom_minimum_size = Vector2(0, 50)
+	auth_submit_button.add_theme_color_override("font_color", Color("#f97316"))
+	auth_submit_button.pressed.connect(_auth_submit)
+	box.add_child(auth_submit_button)
+
+	var note := Label.new()
+	note.text = "Accounts are saved on this device."
+	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	note.add_theme_font_size_override("font_size", 12)
+	note.add_theme_color_override("font_color", Color(0.6, 0.6, 0.65))
+	box.add_child(note)
+
+	# Put the cursor in the first empty box.
+	if auth_username_edit.text == "":
+		auth_username_edit.call_deferred("grab_focus")
+	else:
+		auth_password_edit.call_deferred("grab_focus")
+
+
+func _auth_set_mode(mode: String) -> void:
+	auth_mode = mode
+
+	var is_signup: bool = mode == "signup"
+
+	auth_title_label.text = "CREATE ACCOUNT" if is_signup else "WELCOME BACK"
+	auth_submit_button.text = "CREATE ACCOUNT" if is_signup else "LOG IN"
+	auth_confirm_box.visible = is_signup
+
+	auth_password_edit.text = ""
+	auth_confirm_edit.text = ""
+	_auth_show_message("", false)
+
+	if is_signup:
+		auth_username_edit.placeholder_text = "Choose a username"
+		auth_password_edit.placeholder_text = "Choose a password"
+		_auth_on_username_changed(auth_username_edit.text)
+	else:
+		auth_username_edit.placeholder_text = "Enter your username"
+		auth_password_edit.placeholder_text = "Enter your password"
+
+
+# While signing up, tell the player straight away if the name is free.
+func _auth_on_username_changed(new_text: String) -> void:
+	if auth_mode != "signup":
+		_auth_show_message("", false)
+		return
+
+	var username: String = new_text.strip_edges()
+
+	if username == "":
+		_auth_show_message("", false)
+		return
+
+	var problem: String = account_validate_username(username)
+	if problem != "":
+		_auth_show_message(problem, true)
+		return
+
+	if account_exists(username):
+		_auth_show_message("\"" + username + "\" is already taken.", true)
+	else:
+		_auth_show_message("\"" + username + "\" is available!", false)
+
+
+func _auth_on_show_password_toggled(pressed: bool) -> void:
+	auth_password_edit.secret = not pressed
+	auth_confirm_edit.secret = not pressed
+
+
+func _auth_username_submitted(_text: String) -> void:
+	auth_password_edit.grab_focus()
+
+
+func _auth_password_submitted(_text: String) -> void:
+	if auth_mode == "signup":
+		auth_confirm_edit.grab_focus()
+	else:
+		_auth_submit()
+
+
+func _auth_text_submit(_text: String) -> void:
+	_auth_submit()
+
+
+func _auth_show_message(message: String, is_error: bool) -> void:
+	if not is_instance_valid(auth_message_label):
+		return
+
+	auth_message_label.text = message
+	auth_message_label.add_theme_color_override(
+		"font_color",
+		Color("#ef4444") if is_error else Color("#22c55e")
+	)
+
+
+func _auth_submit() -> void:
+	if auth_busy:
+		return
+
+	auth_busy = true
+	auth_submit_button.disabled = true
+
+	var username: String = auth_username_edit.text.strip_edges()
+	var password: String = auth_password_edit.text
+	var result: Dictionary
+
+	if auth_mode == "signup":
+		if password != auth_confirm_edit.text:
+			result = {"ok": false, "message": "Passwords do not match."}
+		else:
+			result = account_create(username, password)
+	else:
+		result = account_login(username, password)
+
+	if not bool(result["ok"]):
+		_auth_show_message(str(result["message"]), true)
+
+		# Short pause after a failed attempt (slows down password guessing).
+		await get_tree().create_timer(0.6).timeout
+		auth_busy = false
+
+		if is_instance_valid(auth_submit_button):
+			auth_submit_button.disabled = false
+		return
+
+	_auth_show_message("Welcome, " + current_user + "!", false)
+	await get_tree().create_timer(0.5).timeout
+
+	if is_instance_valid(auth_panel):
+		auth_panel.queue_free()
+
+	auth_panel = null
+	auth_busy = false
+	auth_succeeded.emit()
+
+
+# ------------------------------------------------------------
+# ACCOUNT BAR (top right of the main menu) + LOG OUT
+# ------------------------------------------------------------
+
+var account_bar: HBoxContainer
+
+
+func create_account_bar() -> void:
+	if is_instance_valid(account_bar):
+		account_bar.queue_free()
+
+	account_bar = HBoxContainer.new()
+	account_bar.name = "AccountBar"
+	account_bar.z_index = 5
+	account_bar.add_theme_constant_override("separation", 12)
+	add_child(account_bar)
+
+	account_bar.set_anchors_and_offsets_preset(
+		Control.PRESET_TOP_RIGHT,
+		Control.PRESET_MODE_MINSIZE,
+		20
+	)
+	account_bar.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+
+	var name_label := Label.new()
+	name_label.text = "Logged in as: " + current_user
+	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	name_label.add_theme_font_size_override("font_size", 18)
+	name_label.add_theme_color_override("font_color", Color.WHITE)
+	name_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	name_label.add_theme_constant_override("outline_size", 6)
+	account_bar.add_child(name_label)
+
+	var logout_button := Button.new()
+	logout_button.text = "LOG OUT"
+	logout_button.custom_minimum_size = Vector2(110, 38)
+	logout_button.pressed.connect(_on_logout_pressed)
+	account_bar.add_child(logout_button)
+
+
+func _on_logout_pressed() -> void:
+	await logout()
+
+
+func logout() -> void:
+	current_user = ""
+
+	var root := get_tree().root
+	if root.has_meta("current_username"):
+		root.remove_meta("current_username")
+
+	if is_instance_valid(account_bar):
+		account_bar.queue_free()
+		account_bar = null
+
+	show_auth_screen()
+	await auth_succeeded
+
+	garage_load_saved()
+	create_account_bar()
+	menu_layout.show()
 
 
 #------------------
@@ -369,20 +986,12 @@ func connect_button(button: Control, button_name: String) -> void:
 # INTRO ANIMATION
 #------------------
 
+# The logo is already at the top (it stays there from the log in screen),
+# so the intro now lays out the menu and fades it in.
 func animate_intro() -> void:
 	var screen_size: Vector2 = get_viewport_rect().size
 
-	var logo_start := Vector2(
-		(screen_size.x - LOGO_SIZE.x) / 2.0,
-		(screen_size.y - LOGO_SIZE.y) / 2.0
-	)
-
-	var logo_end := Vector2(
-		(screen_size.x - LOGO_SIZE.x) / 2.0,
-		15.0
-	)
-
-	logo.position = logo_start
+	_place_logo_top()
 
 	var top_row_width: float = PLAY_SIZE.x + COLUMN_GAP + TROLLEY_SIZE.x
 	var bottom_row_width: float = SIDE_BUTTON_SIZE.x * 3.0 + BUTTON_GAP * 2.0
@@ -426,13 +1035,7 @@ func animate_intro() -> void:
 
 	menu_layout.modulate.a = 0.0
 
-	await get_tree().create_timer(0.5).timeout
-
-	var logo_tween := create_tween()
-	logo_tween.set_trans(Tween.TRANS_CUBIC)
-	logo_tween.set_ease(Tween.EASE_IN_OUT)
-	logo_tween.tween_property(logo, "position", logo_end, 1.0)
-	await logo_tween.finished
+	await get_tree().create_timer(0.3).timeout
 
 	var fade_tween := create_tween()
 	fade_tween.set_trans(Tween.TRANS_CUBIC)
@@ -534,6 +1137,8 @@ func start_game() -> void:
 	garage_publish_meta()
 	get_tree().root.set_meta("selected_season", level_current_season)
 	get_tree().root.set_meta("selected_level", level_selected_number)
+	# NEW: the right-click look around in the game uses the Mouse Sensitivity slider.
+	get_tree().root.set_meta("mouse_sensitivity", settings_mouse_sensitivity)
 
 	# 4. Create the map and the trolley.
 	var map_instance: Node = map_scene.instantiate()
@@ -567,8 +1172,21 @@ func start_game() -> void:
 	var tree := get_tree()
 	tree.root.add_child(map_instance)
 
+	# NEW: make the base plate solid so the trolley cannot fly through it.
+	_ensure_base_plate_collision(map_instance)
+
 	trolley_instance.name = "PlayerTrolley"
 	map_instance.add_child(trolley_instance)
+
+	# Pause menu: press Esc in the game for CONTINUE / QUIT.
+	var pause_script := load("res://scenes/menus/pause_menu.gd") as Script
+	if pause_script != null:
+		var pause_menu := CanvasLayer.new()
+		pause_menu.name = "PauseMenu"
+		pause_menu.set_script(pause_script)
+		map_instance.add_child(pause_menu)
+	else:
+		push_warning("Pause menu script not found: res://scenes/menus/pause_menu.gd")
 
 	var spawn_point: Node3D = _find_trolley_spawn(map_instance)
 
@@ -580,6 +1198,22 @@ func start_game() -> void:
 			+ ", ".join(TROLLEY_SPAWN_NAMES)
 			+ "). The trolley was placed at the map origin."
 		)
+
+	# NEW: driving. W/S to drive, A/D to steer. This is added after the trolley
+	# is placed, so driving starts from the spawn.
+	if ResourceLoader.exists(DRIVE_CONTROLLER_PATH):
+		var drive_script := load(DRIVE_CONTROLLER_PATH) as Script
+		if drive_script != null:
+			var drive_controller := Node3D.new()
+			drive_controller.name = "DriveController"
+			drive_controller.set_script(drive_script)
+			# Give it the trolley BEFORE it enters the tree.
+			drive_controller.set("trolley", trolley_instance as Node3D)
+			map_instance.add_child(drive_controller)
+		else:
+			push_warning("Drive controller failed to load: " + DRIVE_CONTROLLER_PATH)
+	else:
+		push_warning("Drive controller script not found: " + DRIVE_CONTROLLER_PATH)
 
 	# 6. Make the map the active scene and remove the menu.
 	tree.current_scene = map_instance
@@ -594,6 +1228,83 @@ func _find_trolley_spawn(map_root: Node) -> Node3D:
 			return found as Node3D
 
 	return null
+
+
+# NEW: gives every base plate mesh in the map a solid collision shape.
+# Meshes that already have collision (a StaticBody3D child, or a body parent)
+# are left alone.
+func _ensure_base_plate_collision(map_root: Node) -> void:
+	var meshes: Array[MeshInstance3D] = []
+	_collect_base_plate_meshes(map_root, false, meshes)
+
+	if meshes.is_empty():
+		push_warning(
+			"No base plate found in the map (looked for node names containing: "
+			+ ", ".join(BASE_PLATE_NAMES)
+			+ "). Add your node's name to BASE_PLATE_NAMES in main_menu.gd."
+		)
+		return
+
+	for mesh in meshes:
+		if mesh.get_parent() is CollisionObject3D:
+			continue
+
+		var already_solid := false
+		for child in mesh.get_children():
+			if child is CollisionObject3D:
+				already_solid = true
+				break
+
+		if already_solid:
+			continue
+
+		# Solid from both sides, so nothing can fall through the plate.
+		var shape: ConcavePolygonShape3D = mesh.mesh.create_trimesh_shape()
+		if shape == null:
+			push_warning("Could not build collision for: " + str(mesh.name))
+			continue
+
+		shape.backface_collision = true
+
+		var solid_body := StaticBody3D.new()
+		solid_body.name = str(mesh.name) + "_Collision"
+
+		var solid_shape := CollisionShape3D.new()
+		solid_shape.shape = shape
+		solid_body.add_child(solid_shape)
+
+		mesh.add_child(solid_body)
+
+
+func _collect_base_plate_meshes(
+	node: Node,
+	parent_matched: bool,
+	result: Array[MeshInstance3D]
+) -> void:
+	for child in node.get_children():
+		if child.name == "PlayerTrolley":
+			continue
+
+		var matched: bool = parent_matched or _is_base_plate_name(str(child.name))
+
+		if matched and child is MeshInstance3D:
+			var mesh_node := child as MeshInstance3D
+			if mesh_node.mesh != null:
+				result.append(mesh_node)
+
+		_collect_base_plate_meshes(child, matched, result)
+
+
+func _is_base_plate_name(node_name: String) -> bool:
+	var cleaned: String = (
+		node_name.to_lower().replace("_", "").replace(" ", "").replace("-", "")
+	)
+
+	for wanted in BASE_PLATE_NAMES:
+		if cleaned.contains(wanted):
+			return true
+
+	return false
 
 
 #------------------
@@ -731,7 +1442,6 @@ func hide_credits() -> void:
 const GARAGE_TROLLEY_PATH := "res://assets/images/garage/trollys/"
 const GARAGE_PEOPLE_PATH := "res://assets/images/garage/people/"
 const GARAGE_BACKGROUND_PATH := "res://assets/images/background1.png"
-const GARAGE_SAVE_PATH := "user://trolley_mayhem_garage.cfg"
 
 var garage_panel: Control
 var garage_grid: GridContainer
@@ -791,36 +1501,34 @@ func garage_publish_meta() -> void:
 	root.set_meta("selected_trolley_path", garage_get_applied_trolley_path())
 	root.set_meta("selected_trolley_name", garage_applied_trolley)
 	root.set_meta("selected_person_colour", garage_applied_colour)
+	root.set_meta("current_username", current_user)
 
 
-# Saves the applied choices to disk so they survive restarting the game.
+# Saves the applied choices to the logged-in account's save file.
 func garage_save() -> void:
-	var config := ConfigFile.new()
-	config.set_value("garage", "trolley", garage_applied_trolley)
-	config.set_value("garage", "colour", garage_applied_colour)
-
-	var error := config.save(GARAGE_SAVE_PATH)
-	if error != OK:
-		push_warning("Could not save Garage choices. Error code: " + str(error))
+	user_data_set("garage", "trolley", garage_applied_trolley)
+	user_data_set("garage", "colour", garage_applied_colour)
 
 
-# Loads the saved choices (if any) and checks they are still valid.
+# Loads the logged-in account's saved choices (if any) and checks they are
+# still valid. A brand new account starts with the defaults.
 func garage_load_saved() -> void:
-	var config := ConfigFile.new()
+	# Start from the defaults so one account's choices never leak into another.
+	garage_applied_trolley = "Starter Trolly"
+	garage_applied_colour = "White"
 
-	if config.load(GARAGE_SAVE_PATH) == OK:
-		var saved_trolley: String = str(
-			config.get_value("garage", "trolley", garage_applied_trolley)
-		)
-		var saved_colour: String = str(
-			config.get_value("garage", "colour", garage_applied_colour)
-		)
+	var saved_trolley: String = str(
+		user_data_get("garage", "trolley", garage_applied_trolley)
+	)
+	var saved_colour: String = str(
+		user_data_get("garage", "colour", garage_applied_colour)
+	)
 
-		if not garage_find_trolley(saved_trolley).is_empty():
-			garage_applied_trolley = saved_trolley
+	if not garage_find_trolley(saved_trolley).is_empty():
+		garage_applied_trolley = saved_trolley
 
-		if garage_colours.has(saved_colour):
-			garage_applied_colour = saved_colour
+	if garage_colours.has(saved_colour):
+		garage_applied_colour = saved_colour
 
 	garage_selected_trolley = garage_applied_trolley
 	garage_selected_colour = garage_applied_colour
@@ -1463,7 +2171,12 @@ func _settings_build_page(page: VBoxContainer) -> void:
 			)
 
 			var controls_note := Label.new()
-			controls_note.text = "Key bindings can be added when gameplay controls are implemented."
+			# CHANGED: describes the driving controls.
+			controls_note.text = (
+				"Driving: Space gives the trolley one short push (3 second cooldown), A to turn left, D to turn right, "
+				+ "Backspace to reset the trolley. Hold right-click and move the "
+				+ "mouse to look around."
+			)
 			controls_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			page.add_child(controls_note)
 

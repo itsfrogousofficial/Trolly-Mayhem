@@ -1,34 +1,537 @@
-[gd_scene format=3 uid="uid://bbykxhayaujuw"]
+[gd_scene format=4 uid="uid://bbykxhayaujuw"]
 
 [ext_resource type="ArrayMesh" uid="uid://cimb41amh4cql" path="res://scenes/maps/map_one.obj" id="1_1ccd8"]
+[ext_resource type="Script" uid="uid://cfx377pg8286n" path="res://scenes/menus/level_manager.gd" id="1_13rbi"]
+[ext_resource type="PackedScene" uid="uid://dcalphax5du53" path="res://assets/models/Free Low Poly Vehicles Pack by Rgsdev/SUV/SUV.fbx" id="1_hd6tw"]
 [ext_resource type="ArrayMesh" uid="uid://cmw4ngm4ie1ar" path="res://scenes/maps/PineTree1.obj" id="2_mq464"]
+[ext_resource type="AudioStream" uid="uid://dbkhb6i75viy6" path="res://assets/audio/car-sound1.mp3" id="2_qk1lk"]
+[ext_resource type="Texture2D" uid="uid://ckeyh5qxafgd2" path="res://assets/sky/panorama.png" id="3_p2snc"]
+[ext_resource type="PackedScene" uid="uid://cwceo6hqci3aq" path="res://assets/models/Prop_StopSign/fbx/Prop_StopSign.fbx" id="5_lwhsc"]
+[ext_resource type="PackedScene" uid="uid://ccc3unxla6l3u" path="res://assets/models/road pack I think/Models/Road Straight 1.dae" id="6_dpqy1"]
+[ext_resource type="PackedScene" uid="uid://do1igan01xien" path="res://assets/models/road pack I think/Models/Road Curve.dae" id="7_hd6tw"]
+[ext_resource type="PackedScene" uid="uid://gk8g1f3aoskf" path="res://assets/models/Free Low Poly Vehicles Pack by Rgsdev/Hatchback/Hatchback.fbx" id="7_na8gk"]
+[ext_resource type="PackedScene" uid="uid://dd310cce1gugx" path="res://assets/models/Free Low Poly Vehicles Pack by Rgsdev/Bus/Bus.fbx" id="8_kgk5e"]
+[ext_resource type="PackedScene" uid="uid://cimidrk3cc5vp" path="res://assets/models/road pack I think/Models/Highway Bridge 2.dae" id="9_n222n"]
+[ext_resource type="Script" uid="uid://cr00uadur5pca" path="res://scenes/maps/car_audio_distance.gd" id="9_vuxui"]
+[ext_resource type="AudioStream" uid="uid://bkg50vjc17vdl" path="res://assets/audio/car-sound2.mp3" id="10_vuxui"]
+[ext_resource type="PackedScene" uid="uid://bog3t1cahi0d2" path="res://assets/models/Free Low Poly Vehicles Pack by Rgsdev/Roadster/Roadster.fbx" id="11_yhm5w"]
+[ext_resource type="PackedScene" uid="uid://r2dxgnnef0t8" path="res://assets/models/Free Low Poly Vehicles Pack by Rgsdev/Ambulance/Ambulance.fbx" id="12_qk1lk"]
+[ext_resource type="AudioStream" uid="uid://d4if16qlcrihq" path="res://assets/audio/ambulance-siren.mp3" id="13_kgk5e"]
+[ext_resource type="PackedScene" uid="uid://b1lmjbfsgfvjk" path="res://assets/models/Free Low Poly Vehicles Pack by Rgsdev/Police Sports/Police Sports.fbx" id="13_vuxui"]
+[ext_resource type="AudioStream" uid="uid://ivuglv0taoag" path="res://assets/audio/police-siren.mp3" id="14_na8gk"]
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_cf3p0"]
+_surfaces = [{
+"aabb": AABB(-26.8733, -1, -12.98807, 53.7466, 2, 25.97614),
+"format": 34896613377,
+"index_count": 36,
+"index_data": PackedByteArray("AAABAAIAAgADAAAAAgABAAQAAAADAAUAAAAFAAEAAgAGAAMABgAFAAMABAAGAAIAAQAFAAcAAQAHAAQABwAFAAYABAAHAAYA"),
+"name": "Material",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 8,
+"vertex_data": PackedByteArray("AAD//wAAAAD/////AAAAAAAA/////wAAAAAAAP//AAD///////8AAAAAAAAAAAAA//8AAP//AAD//wAAAAAAAA==")
+}]
+blend_shape_mode = 0
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_jagdy"]
+_surfaces = [{
+"aabb": AABB(-26.8733, -1, -12.98807, 53.7466, 2, 25.97614),
+"attribute_data": PackedByteArray("/9//f/+f/3//3/8//5//P/+f/z//X/8//58AAP9fAAD/n////1////+f/7//X/+//1//f/8f/3//X/8//x//P/+f/3//X/9//5//P/9f/z//n/+//1//v/+f/3//X/9/"),
+"format": 34896613399,
+"index_count": 36,
+"index_data": PackedByteArray("AAABAAIAAgABAAMABAAFAAYABgAFAAcACAAJAAoACgAJAAsADAANAA4ADgANAA8AEAARABIAEgARABMAFAAVABYAFgAVABcA"),
+"name": "Material",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 24,
+"vertex_data": PackedByteArray("AAD//wAA////////AAD//wAA////////////////////////////v///AAD///+/AAD//////78AAAAA////vwAA/////1TVAAAAAP//VNUAAP//AABU1QAAAAAAAFTV//8AAAAA/78AAAAAAAD/v///AAD///+/AAAAAP///7//////AABU1f//AAAAAFTV////////VNX//wAA//9U1QAA//8AAP//AAAAAAAA////////AAD/////AAAAAP///3//v/9//7//f/+//3//v/////////////////////9U1VTVVNVU1VTVVNVU1VTVAAD/fwAA/38AAP9/AAD/f6oqqiqqKqoqqiqqKqoqqir/v/+//7//v/+//7//v/+/")
+}]
+blend_shape_mode = 0
+shadow_mesh = SubResource("ArrayMesh_cf3p0")
+
+[sub_resource type="GDScript" id="GDScript_vuxui"]
+script/source = "
+extends Node3D
+
+@export var speed: float = 10.0
+@export var route_name: String = \"TrafficRoute1\"
+@export var stop_distance: float = 1.0
+
+var current_point: int = 0
+var route_points: Array[Marker3D] = []
+
+func _ready() -> void:
+	var route = get_tree().current_scene.find_child(route_name, true, false)
+
+	if route == null:
+		push_error(\"Traffic route not found: \" + route_name)
+		set_process(false)
+		return
+
+	for child in route.get_children():
+		if child is Marker3D:
+			route_points.append(child)
+
+	if route_points.is_empty():
+		push_error(\"No Marker3D points found in \" + route_name)
+		set_process(false)
+		return
+
+	global_position = route_points[0].global_position
+	current_point = 1 % route_points.size()
+
+func _process(delta: float) -> void:
+	if route_points.is_empty():
+		return
+
+	var target = route_points[current_point].global_position
+	var direction = target - global_position
+	direction.y = 0.0
+
+	if direction.length() <= stop_distance:
+		current_point = (current_point + 1) % route_points.size()
+		return
+
+	global_position += direction.normalized() * speed * delta
+
+	if direction.length_squared() > 0.001:
+		look_at(global_position + direction, Vector3.UP)
+"
+
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_mmp38"]
+panorama = ExtResource("3_p2snc")
+
+[sub_resource type="Sky" id="Sky_lsw1g"]
+sky_material = SubResource("PanoramaSkyMaterial_mmp38")
+
+[sub_resource type="Environment" id="Environment_07f4a"]
+background_mode = 2
+sky = SubResource("Sky_lsw1g")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1jadt"]
+size = Vector3(11.654358, 12.383911, 1)
 
 [node name="MapOne" type="Node3D" unique_id=6051591]
 
 [node name="BasePlate" type="MeshInstance3D" parent="." unique_id=1888969248]
-transform = Transform3D(0.0022241613, 0, -0.99999756, 0, 1, 0, 0.99999756, 0, 0.0022241613, 0.6433983, -1.4365273, -13.077737)
+transform = Transform3D(0.0022241613, 0, -0.99999756, 0, 1, 0, 0.99999756, 0, 0.0022241613, 0.6433983, -1.4365273, 17.946648)
 mesh = ExtResource("1_1ccd8")
 
-[node name="BasePlate3" type="MeshInstance3D" parent="." unique_id=1855798649]
-transform = Transform3D(0.0022241613, 0, -0.99999756, 0, 1, 0, 0.99999756, 0, 0.0022241613, 0.27103424, -14.010956, -114.18112)
+[node name="BasePlate3" type="MeshInstance3D" parent="BasePlate" unique_id=1855798649]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -101.103966, -12.574429, 0.14749295)
 mesh = ExtResource("1_1ccd8")
 
-[node name="BasePlate5" type="MeshInstance3D" parent="." unique_id=117091087]
-transform = Transform3D(0.42214614, 0, -0.9065278, 0, 1, 0, 0.9065278, 0, 0.42214614, -7.31765, -14.010956, -154.12512)
+[node name="BasePlate4" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=1997900137]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.053749084, 0, 24.16182)
 mesh = ExtResource("1_1ccd8")
 
-[node name="BasePlate6" type="MeshInstance3D" parent="." unique_id=632655700]
-transform = Transform3D(0.3988437, -0.09753945, -0.91181684, 0.25238666, 0.96760195, 0.006891174, 0.8816035, -0.23287882, 0.41053963, -29.383469, -20.82935, -201.89435)
+[node name="BasePlate21" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=834933167]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32.451653, 0, -7.910317)
 mesh = ExtResource("1_1ccd8")
 
-[node name="BasePlate2" type="MeshInstance3D" parent="." unique_id=1383935564]
-transform = Transform3D(0.0022241613, 0, -0.99999756, 0.24062404, 0.9706184, 0.000535188, 0.97061604, -0.24062464, 0.0021588118, 0.423419, -7.8998413, -65.77727)
+[node name="BasePlate25" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=225245665]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32.39894, 0, -31.615583)
 mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate26" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=2070607756]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32.344566, 0, -56.07166)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate27" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=1418403375]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32.324097, 0, -65.279205)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate24" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=233227710]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32.529373, 0, 27.026207)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate22" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=25677902]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32.579613, 0, 49.62155)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate23" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=1500378842]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32.613335, 0, 64.77571)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate7" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=1408511224]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.098106384, 0, 44.100853)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate8" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=587369125]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.14428711, 0, 64.86363)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate9" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=1660301360]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14542389, 0, -65.38898)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate10" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=659676629]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.10106659, 0, -45.449944)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate11" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=767479183]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.054878235, 0, -24.687159)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate5" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=117091087]
+transform = Transform3D(0.90746456, 0, 0.42012882, 0, 1, 0, -0.42012882, 0, 0.90746456, -39.96077, 0, 7.499823)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate6" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=632655700]
+transform = Transform3D(0.8824885, -0.23309523, 0.40851063, 0.25238666, 0.96760195, 0.006891174, -0.39688194, 0.09702126, 0.9127278, -87.77897, -6.8183937, 29.459343)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate2" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=1383935564]
+transform = Transform3D(0.97061867, -0.24062409, -6.534951e-05, 0.24062404, 0.9706184, 0.000535188, -6.5349275e-05, -0.00053518807, 1, 48.40408, 6.1111145, -0.044726342)
+mesh = SubResource("ArrayMesh_jagdy")
+
+[node name="BasePlate12" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=30176992]
+transform = Transform3D(0.9706187, -0.24062411, -6.534951e-05, 0.24062404, 0.9706184, 0.000535188, -6.5349275e-05, -0.0005351881, 1, 48.451496, 6.1111145, -21.363142)
+mesh = SubResource("ArrayMesh_jagdy")
+
+[node name="BasePlate13" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=916495046]
+transform = Transform3D(0.9706188, -0.24062414, -6.534951e-05, 0.24062404, 0.9706184, 0.000535188, -6.534904e-05, -0.0005351882, 1, 48.48463, 6.1111145, -36.26144)
+mesh = SubResource("ArrayMesh_jagdy")
+
+[node name="BasePlate14" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=1646953825]
+transform = Transform3D(0.97061884, -0.24062417, -6.534951e-05, 0.24062404, 0.9706184, 0.000535188, -6.534904e-05, -0.00053518824, 1, 48.516598, 6.1111145, -50.635826)
+mesh = SubResource("ArrayMesh_jagdy")
+
+[node name="BasePlate15" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=1784184189]
+transform = Transform3D(0.97061896, -0.24062423, -6.534951e-05, 0.24062404, 0.9706184, 0.000535188, -6.534904e-05, -0.0005351885, 1, 48.549313, 6.1111145, -65.34661)
+mesh = SubResource("ArrayMesh_jagdy")
+
+[node name="BasePlate16" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=605864975]
+transform = Transform3D(0.9706188, -0.24062414, -6.534951e-05, 0.24062404, 0.9706184, 0.000535188, -6.534904e-05, -0.0005351882, 1, 48.263103, 6.1111145, 63.337486)
+mesh = SubResource("ArrayMesh_jagdy")
+
+[node name="BasePlate20" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=1094525620]
+transform = Transform3D(0.97061884, -0.24062417, -6.534951e-05, 0.24062404, 0.9706184, 0.000535188, -6.534904e-05, -0.00053518824, 1, 48.259556, 6.1111145, 64.9311)
+mesh = SubResource("ArrayMesh_jagdy")
+
+[node name="BasePlate17" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=845949456]
+transform = Transform3D(0.97061884, -0.24062417, -6.534951e-05, 0.24062404, 0.9706184, 0.000535188, -6.534904e-05, -0.00053518824, 1, 48.296234, 6.1111145, 48.439194)
+mesh = SubResource("ArrayMesh_jagdy")
+
+[node name="BasePlate18" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=1268042466]
+transform = Transform3D(0.9706189, -0.2406242, -6.534951e-05, 0.24062404, 0.9706184, 0.000535188, -6.534904e-05, -0.00053518836, 1, 48.3282, 6.1111145, 34.0648)
+mesh = SubResource("ArrayMesh_jagdy")
+
+[node name="BasePlate19" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=639329083]
+transform = Transform3D(0.97061896, -0.24062423, -6.534951e-05, 0.24062404, 0.9706184, 0.000535188, -6.534904e-05, -0.0005351885, 1, 48.357815, 6.1111145, 20.752806)
+mesh = SubResource("ArrayMesh_jagdy")
+
+[node name="BasePlate28" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=852307928]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 101.158516, 12.574429, -24.669739)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate29" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=2090289451]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 101.214355, 12.574429, -49.776096)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate30" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=58621312]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 101.24907, 12.574429, -65.384476)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate31" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=1411017328]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100.95932, 12.574429, 64.88951)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate32" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=1698713611]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 101.01516, 12.574429, 39.783157)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate33" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=418524267]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 101.04987, 12.574429, 24.174788)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate34" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=1147041176]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 101.1044, 12.574429, -0.34042844)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate35" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=1745757233]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 152.22684, 12.574429, -24.556152)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate36" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=1668001410]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 152.28268, 12.574429, -49.662518)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate37" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=345112830]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 152.31741, 12.574429, -65.27089)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate38" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=1370663358]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 152.02765, 12.574429, 65.0031)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate39" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=1745401548]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 152.0835, 12.574429, 39.896736)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate40" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=668677177]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 152.11821, 12.574429, 24.288372)
+mesh = ExtResource("1_1ccd8")
+
+[node name="BasePlate41" type="MeshInstance3D" parent="BasePlate/BasePlate3" unique_id=576827971]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 152.17273, 12.574429, -0.22684392)
+mesh = ExtResource("1_1ccd8")
+
+[node name="PineTree2" type="MeshInstance3D" parent="BasePlate" unique_id=1237769895]
+transform = Transform3D(0.0022241613, 0, 0.99999756, 0, 1, 0, -0.99999756, 0, 0.0022241613, -121.21742, -11.101603, -13.860687)
+mesh = ExtResource("2_mq464")
+
+[node name="PineTree3" type="MeshInstance3D" parent="BasePlate/PineTree2" unique_id=1199520683]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26.686516, 0, 0)
+mesh = ExtResource("2_mq464")
+
+[node name="PineTree4" type="MeshInstance3D" parent="BasePlate/PineTree2" unique_id=1875746030]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26.686516, 0, 7.5301056)
+mesh = ExtResource("2_mq464")
+
+[node name="PineTree5" type="MeshInstance3D" parent="BasePlate/PineTree2" unique_id=488218886]
+transform = Transform3D(0.7077172, -0.70649606, 0, 0.706496, 0.7077171, 0, 0, 0, 1, -4.4858694, 0, 7.5301056)
+mesh = ExtResource("2_mq464")
+
+[node name="Prop_StopSign" parent="BasePlate" unique_id=1322497463 instance=ExtResource("5_lwhsc")]
+transform = Transform3D(0.2474277, 0, 0.9689064, 0, 1, 0, -0.9689064, 0, 0.2474277, -24.88037, 0.98590064, -4.245796)
+
+[node name="Road Straight 1" parent="BasePlate" unique_id=1088246132 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(0.0022241613, 0, 0.99999756, 0, 1, 0, -0.99999756, 0, 0.0022241613, -21.928318, 1.0084839, 9.364328)
+
+[node name="Road Straight 13" parent="BasePlate/Road Straight 1" unique_id=1010654786 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.8146973e-06, -12.564646, -56.549168)
+
+[node name="Road Straight 36" parent="BasePlate/Road Straight 1" unique_id=1172556085 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, -1.1641532e-10, 2.3283064e-10, 1.4551915e-10, 0.96814346, 0.2503961, 0, -0.25039622, 0.9681439, -3.8146973e-06, -10.906946, -49.00668)
+
+[node name="Road Straight 38" parent="BasePlate/Road Straight 1" unique_id=238353055 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 5.820766e-11, 2.3283064e-10, 1.4551915e-10, 0.96814346, 0.2503961, 0, -0.25039622, 0.9681439, -3.8146973e-06, -9.781544, -44.474888)
+
+[node name="Road Straight 39" parent="BasePlate/Road Straight 1" unique_id=1086990002 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 2.3283064e-10, 2.3283064e-10, 1.4551915e-10, 0.96814346, 0.2503961, 0, -0.25039622, 0.9681439, -3.8146973e-06, -9.028597, -41.388916)
+
+[node name="Road Straight 40" parent="BasePlate/Road Straight 1" unique_id=1497114924 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 2.910383e-10, 2.3283064e-10, 1.4551915e-10, 0.96814346, 0.2503961, 0, -0.25039622, 0.9681439, -5.722046e-06, -8.22994, -38.206398)
+
+[node name="Road Straight 41" parent="BasePlate/Road Straight 1" unique_id=2136259634 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 1.1641532e-10, 2.3283064e-10, 1.4551915e-10, 0.96814346, 0.2503961, 0, -0.25039622, 0.9681439, -7.6293945e-06, -7.58745, -35.67769)
+
+[node name="Road Straight 42" parent="BasePlate/Road Straight 1" unique_id=873549111 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 2.910383e-10, 2.3283064e-10, 1.4551915e-10, 0.96814346, 0.2503961, 0, -0.25039622, 0.9681439, -7.6293945e-06, -6.462047, -31.14592)
+
+[node name="Road Straight 43" parent="BasePlate/Road Straight 1" unique_id=1067832851 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 4.656613e-10, 2.3283064e-10, 1.4551915e-10, 0.96814346, 0.2503961, 0, -0.25039622, 0.9681439, -7.6293945e-06, -5.7091002, -28.059929)
+
+[node name="Road Straight 44" parent="BasePlate/Road Straight 1" unique_id=1450018325 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 5.2386895e-10, 2.3283064e-10, 1.4551915e-10, 0.96814346, 0.2503961, 0, -0.25039622, 0.9681439, -5.722046e-06, -4.910444, -24.877407)
+
+[node name="Road Straight 45" parent="BasePlate/Road Straight 1" unique_id=74757080 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 2.910383e-10, 2.3283064e-10, 1.4551915e-10, 0.96814346, 0.2503961, 0, -0.25039622, 0.9681439, -9.536743e-06, -4.341198, -22.56232)
+
+[node name="Road Straight 46" parent="BasePlate/Road Straight 1" unique_id=30849196 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 4.656613e-10, 2.3283064e-10, 1.4551915e-10, 0.96814346, 0.2503961, 0, -0.25039622, 0.9681439, -9.536743e-06, -3.2157948, -18.030552)
+
+[node name="Road Straight 47" parent="BasePlate/Road Straight 1" unique_id=386402220 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 6.4028427e-10, 2.3283064e-10, 1.4551915e-10, 0.96814346, 0.2503961, 0, -0.25039622, 0.9681439, -1.04904175e-05, -2.462848, -14.944557)
+
+[node name="Road Straight 48" parent="BasePlate/Road Straight 1" unique_id=3422548 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 6.9849193e-10, 2.3283064e-10, 1.4551915e-10, 0.96814346, 0.2503961, 0, -0.25039622, 0.9681439, -8.583069e-06, -1.6641915, -11.762039)
+
+[node name="Road Straight 49" parent="BasePlate/Road Straight 1" unique_id=797263089 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 8.1490725e-10, 2.3283064e-10, 1.4551915e-10, 0.96814346, 0.2503961, 0, -0.25039622, 0.9681439, -1.04904175e-05, -0.71979594, -7.9446106)
+
+[node name="Road Straight 50" parent="BasePlate/Road Straight 1" unique_id=2099320343 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 1.1641532e-09, 2.3283064e-10, 1.4551915e-10, 0.96814346, 0.2503961, 0, -0.25039622, 0.9681439, -1.6212463e-05, -0.0036597252, -4.953642)
+
+[node name="Road Straight 37" parent="BasePlate/Road Straight 1" unique_id=1441366113 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, -1.1641532e-10, -2.3283064e-10, 1.5279511e-10, 0.9888197, 0.14911649, 2.3283064e-10, -0.14911672, 0.9888204, -8.583069e-06, -11.930778, -52.93134)
+
+[node name="Road Straight 35" parent="BasePlate/Road Straight 1" unique_id=939184856 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 0, 0, 0, 0.96307766, 0.2692237, 0, -0.26922375, 0.963078, -4.7683716e-06, -12.564646, -48.79398)
+
+[node name="Road Straight 14" parent="BasePlate/Road Straight 1" unique_id=1928658136 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.7683716e-06, -12.564646, -60.576496)
+
+[node name="Road Straight 15" parent="BasePlate/Road Straight 1" unique_id=1398627350 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.722046e-06, -12.564646, -65.08554)
+
+[node name="Road Straight 16" parent="BasePlate/Road Straight 1" unique_id=619235766 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.722046e-06, -12.564646, -69.915695)
+
+[node name="Road Straight 17" parent="BasePlate/Road Straight 1" unique_id=1211706315 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.67572e-06, -12.564646, -74.67711)
+
+[node name="Road Straight 18" parent="BasePlate/Road Straight 1" unique_id=706766967 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.67572e-06, -12.564646, -79.269135)
+
+[node name="Road Straight 19" parent="BasePlate/Road Straight 1" unique_id=154657950 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.6293945e-06, -12.564646, -84.13681)
+
+[node name="Road Straight 20" parent="BasePlate/Road Straight 1" unique_id=267283228 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.583069e-06, -12.564646, -88.96956)
+
+[node name="Road Straight 21" parent="BasePlate/Road Straight 1" unique_id=1390858980 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.536743e-06, -12.564646, -93.43242)
+
+[node name="Road Straight 22" parent="BasePlate/Road Straight 1" unique_id=253926541 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.04904175e-05, -12.564646, -97.59801)
+
+[node name="Road Straight 23" parent="BasePlate/Road Straight 1" unique_id=1222046128 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(0.9984916, 0, 0.05490839, 0, 1, 0, -0.05490839, 0, 0.9984916, -1.335144e-05, -12.564646, -101.44272)
+
+[node name="Road Straight 24" parent="BasePlate/Road Straight 1" unique_id=1218426068 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(0.99334013, 0, 0.11522087, 0, 1, 0, -0.11522087, 0, 0.99334013, -0.10455036, -12.564646, -105.06096)
+
+[node name="Road Straight 25" parent="BasePlate/Road Straight 1" unique_id=1367886025 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(0.98268205, 0, 0.18530235, 0, 1, 0, -0.18530235, 0, 0.98268205, -0.10455036, -12.564646, -106.93857)
+
+[node name="Road Straight 26" parent="BasePlate/Road Straight 1" unique_id=1488139509 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(0.95268434, 0, 0.30396423, 0, 1, 0, -0.30396423, 0, 0.95268434, -0.6595602, -12.564646, -110.21521)
+
+[node name="Road Straight 27" parent="BasePlate/Road Straight 1" unique_id=298725326 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(0.91652757, 0, 0.39997375, 0, 1, 0, -0.39997375, 0, 0.91652757, -1.6043558, -12.564646, -113.4877)
+
+[node name="Road Straight 28" parent="BasePlate/Road Straight 1" unique_id=1134722470 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(0.88214016, 0, 0.4709891, 0, 1, 0, -0.4709891, 0, 0.88214016, -3.042039, -12.564646, -116.79843)
+
+[node name="Road Straight 29" parent="BasePlate/Road Straight 1" unique_id=1715333358 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(0.8821404, 0, 0.47098923, 0, 1, 0, -0.47098923, 0, 0.8821404, -5.062847, -12.564646, -120.55925)
+
+[node name="Road Straight 30" parent="BasePlate/Road Straight 1" unique_id=933694065 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(0.84414446, 0, 0.53611815, 0, 1, 0, -0.53611815, 0, 0.84414446, -6.6916685, -12.564646, -123.69049)
+
+[node name="Road Straight 31" parent="BasePlate/Road Straight 1" unique_id=607044190 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(0.84414446, 0, 0.53611827, 0, 1, 0, -0.53611827, 0, 0.84414446, -8.919353, -12.564646, -127.225464)
+
+[node name="Road Straight 32" parent="BasePlate/Road Straight 1" unique_id=1440510926 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(0.84414446, 0, 0.5361185, 0, 1, 0, -0.5361185, 0, 0.84414446, -11.107995, -12.564646, -130.64917)
+
+[node name="Road Straight 33" parent="BasePlate/Road Straight 1" unique_id=1541162340 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(0.84414446, 0, 0.53611875, 0, 1, 0, -0.53611875, 0, 0.84414446, -13.166627, -12.564646, -133.92548)
+
+[node name="Road Straight 34" parent="BasePlate/Road Straight 1" unique_id=323212995 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(0.8840349, 0, 0.4674258, 0, 1, 0, -0.4674258, 0, 0.8840349, -15.888684, -12.564646, -138.10342)
+
+[node name="Road Straight 2" parent="BasePlate/Road Straight 1" unique_id=964919584 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.536743e-07, 0, 4.6263714)
+
+[node name="Road Straight 3" parent="BasePlate/Road Straight 1" unique_id=125913603 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.9073486e-06, 0, 8.674731)
+
+[node name="Road Straight 4" parent="BasePlate/Road Straight 1" unique_id=1334125699 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.861023e-06, 0, 13.267642)
+
+[node name="Road Straight 5" parent="BasePlate/Road Straight 1" unique_id=1426734500 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.8146973e-06, 0, 18.05165)
+
+[node name="Road Straight 6" parent="BasePlate/Road Straight 1" unique_id=711312027 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.7683716e-06, 0, 22.777964)
+
+[node name="Road Straight 7" parent="BasePlate/Road Straight 1" unique_id=1074322634 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.722046e-06, 0, 27.027992)
+
+[node name="Road Straight 8" parent="BasePlate/Road Straight 1" unique_id=1952102698 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.67572e-06, 0, 31.657047)
+
+[node name="Road Straight 9" parent="BasePlate/Road Straight 1" unique_id=1890591011 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.583069e-06, 0, 36.105343)
+
+[node name="Road Straight 10" parent="BasePlate/Road Straight 1" unique_id=490883506 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.536743e-06, 0, 40.477818)
+
+[node name="Road Straight 11" parent="BasePlate/Road Straight 1" unique_id=180871707 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.04904175e-05, 0, 45.367165)
+
+[node name="Road Straight 12" parent="BasePlate/Road Straight 1" unique_id=1655729399 instance=ExtResource("6_dpqy1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1444092e-05, 0, 50.102962)
+
+[node name="Road Curve" parent="BasePlate/Road Straight 1" unique_id=657179676 instance=ExtResource("7_hd6tw")]
+transform = Transform3D(0.012479728, 0, 0.9999238, 0, 1, 0, -0.9999238, 0, 0.012479728, 39.917465, 0.019978523, 50.253727)
+
+[node name="Hatchback" parent="BasePlate" unique_id=1243154025 instance=ExtResource("7_na8gk")]
+transform = Transform3D(-0.025047248, 0, -0.71426433, 0, 0.7211076, 0, 0.852306, 0, -0.02099053, -6.3858128, 1.607785, -0.33623677)
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="BasePlate/Hatchback" unique_id=1892741710]
+stream = ExtResource("2_qk1lk")
+script = ExtResource("9_vuxui")
+
+[node name="SUV" parent="BasePlate" unique_id=51556666 instance=ExtResource("1_hd6tw")]
+transform = Transform3D(0.0022241613, 0, 0.99999756, 0, 1, 0, -0.99999756, 0, 0.0022241613, -87.83878, -11.600386, 3.816967)
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="BasePlate/SUV" unique_id=2026603910]
+stream = ExtResource("2_qk1lk")
+script = ExtResource("9_vuxui")
+
+[node name="Roadster" parent="BasePlate" unique_id=1408447908 instance=ExtResource("11_yhm5w")]
+transform = Transform3D(0.9974474, 0, -0.071405694, 0, 1, 0, 0.071405694, 0, 0.9974474, -69.53831, 11.843702, -2.1851263)
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="BasePlate/Roadster" unique_id=788674137]
+stream = ExtResource("2_qk1lk")
+script = ExtResource("9_vuxui")
+
+[node name="Ambulance" parent="BasePlate" unique_id=233470772 instance=ExtResource("12_qk1lk")]
+transform = Transform3D(0.9999734, 0, -0.0073018614, 0, 1, 0, 0.0073018614, 0, 0.9999734, -73.487724, 11.799758, 12.894774)
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="BasePlate/Ambulance" unique_id=1917691750]
+stream = ExtResource("13_kgk5e")
+script = ExtResource("9_vuxui")
+
+[node name="AudioStreamPlayer3D2" type="AudioStreamPlayer3D" parent="BasePlate/Ambulance" unique_id=1199235799]
+stream = ExtResource("10_vuxui")
+script = ExtResource("9_vuxui")
+
+[node name="Ambulance2" parent="BasePlate" unique_id=2002922571 instance=ExtResource("12_qk1lk")]
+transform = Transform3D(0.960649, 0, 0.27776545, 0, 1, 0, -0.27776545, 0, 0.960649, -72.61353, 11.799758, 3.4433167)
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="BasePlate/Ambulance2" unique_id=615735042]
+stream = ExtResource("13_kgk5e")
+script = ExtResource("9_vuxui")
+
+[node name="AudioStreamPlayer3D2" type="AudioStreamPlayer3D" parent="BasePlate/Ambulance2" unique_id=42200672]
+stream = ExtResource("10_vuxui")
+script = ExtResource("9_vuxui")
+
+[node name="Police Sports" parent="BasePlate" unique_id=156198811 instance=ExtResource("13_vuxui")]
+transform = Transform3D(0.9964984, 0, -0.083612345, 0, 1, 0, 0.083612345, 0, 0.9964984, -71.079056, 11.852722, 38.116383)
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="BasePlate/Police Sports" unique_id=1073231814]
+stream = ExtResource("14_na8gk")
+script = ExtResource("9_vuxui")
+
+[node name="AudioStreamPlayer3D2" type="AudioStreamPlayer3D" parent="BasePlate/Police Sports" unique_id=832992251]
+stream = ExtResource("2_qk1lk")
+script = ExtResource("9_vuxui")
+
+[node name="Highway Bridge 2" parent="BasePlate" unique_id=2026662685 instance=ExtResource("9_n222n")]
+transform = Transform3D(0.0022241613, 0, 0.99999756, 0, 1, 0, -0.99999756, 0, 0.0022241613, -89.692245, -3.1349835, 75.33866)
+
+[node name="Bus" parent="BasePlate" unique_id=1977247304 instance=ExtResource("8_kgk5e")]
+transform = Transform3D(0.019268192, 0, 0.9998148, 0, 1, 0, -0.9998148, 0, 0.019268192, -16.926405, 0.9711876, 4.077381)
+script = SubResource("GDScript_vuxui")
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="BasePlate/Bus" unique_id=303146552]
+stream = ExtResource("10_vuxui")
+script = ExtResource("9_vuxui")
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=586783810]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=269483863]
 
 [node name="PineTree1" type="MeshInstance3D" parent="." unique_id=653113343]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.494191, 0, -142.7959)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.08137, -12.53813, -111.771515)
 mesh = ExtResource("2_mq464")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=114612099]
+environment = SubResource("Environment_07f4a")
+
+[node name="FinishTrigger" type="Area3D" parent="." unique_id=1550111542]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.179916, -12.871271, -149.19649)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FinishTrigger" unique_id=1995104538]
+transform = Transform3D(0.88376266, 0, 0.46793547, 0, 1, 0, -0.46793547, 0, 0.88376266, 0.019067764, 5.6919556, -0.010101318)
+shape = SubResource("BoxShape3D_1jadt")
+
+[node name="LevelManager" type="Node" parent="." unique_id=1062287377]
+script = ExtResource("1_13rbi")

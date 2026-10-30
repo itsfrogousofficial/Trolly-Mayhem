@@ -78,39 +78,55 @@ var credits_panel: Control
 # INITIALISE MENU
 #------------------
 
+
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
-	# Load the list of accounts stored on this device.
+	var root := get_tree().root
+
+	# Load the accounts stored on this device.
 	_accounts_load()
+
+	# Restore the logged-in account if the menu is being reopened
+	# during the same game session.
+	if root.has_meta("current_username"):
+		current_user = str(root.get_meta("current_username"))
 
 	create_background()
 	create_logo()
 	create_menu()
 
-	# The main menu stays hidden until the player is logged in.
+	# Keep the menu hidden until initialisation is complete.
 	menu_layout.hide()
 	menu_layout.modulate.a = 0.0
 	logo.modulate.a = 0.0
 
 	await get_tree().process_frame
-	await play_startup_logos()
+
+	# Play the startup logos only once per game launch.
+	# Root metadata survives when the menu scene is recreated.
+	if not root.has_meta("startup_sequence_played"):
+		root.set_meta("startup_sequence_played", true)
+		await play_startup_logos()
 
 	_place_logo_top()
 	logo.modulate.a = 1.0
 
 	create_music_player()
 
-	# Show the log in / sign up screen and wait until the player gets in.
-	show_auth_screen()
-	await auth_succeeded
+	# Only show sign-in if nobody is logged in.
+	# Returning from a map should keep the existing session.
+	if current_user == "":
+		show_auth_screen()
+		await auth_succeeded
 
-	# Restore the trolley and colour saved on THIS account.
+	# Restore this account's saved trolley and colour.
 	garage_load_saved()
 	create_account_bar()
 
 	menu_layout.show()
 	await animate_intro()
+
 
 
 #------------------
@@ -2157,9 +2173,9 @@ func _settings_build_page(page: VBoxContainer) -> void:
 			var controls_note := Label.new()
 			# CHANGED: describes the driving controls.
 			controls_note.text = (
-				"Driving: W / S to drive and reverse, A / D to steer, "
-				+ "Space for the handbrake, Shift to boost, hold right-click and move the "
-				+ "mouse to look around, Backspace to reset the trolley."
+				"Driving: Space gives the trolley one short push (3 second cooldown), A to turn left, D to turn right, "
+				+ "Backspace to reset the trolley. Hold right-click and move the "
+				+ "mouse to look around."
 			)
 			controls_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			page.add_child(controls_note)

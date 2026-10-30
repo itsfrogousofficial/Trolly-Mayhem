@@ -1,0 +1,11 @@
+SkyGen: Procedural Skybox Generator (Godot 4 editor addon) - License
+
+Copyright (c) 2026 TheKnightShift
+
+You may use this addon and every image it generates in any number of personal and commercial projects
+(games, films, prototypes, client work), with no attribution required. Generated images are yours.
+
+You may not resell, sublicense or redistribute the addon itself (source files or zips), in whole or in
+part, on its own or as part of another asset pack, or claim it as your own tool.
+
+The software is provided "as is", without warranty of any kind.

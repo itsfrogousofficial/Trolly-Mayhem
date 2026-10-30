@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c64dclh66rha2"
 path.s3tc="res://.godot/imported/starter_Wheel hubs metal roughness.png-c876929ec6fc1a3b89d5de20c6a5a2ff.s3tc.ctex"
+path.etc2="res://.godot/imported/starter_Wheel hubs metal roughness.png-c876929ec6fc1a3b89d5de20c6a5a2ff.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/trollys/starter/starter_Wheel hubs metal roughness.png"
-dest_files=["res://.godot/imported/starter_Wheel hubs metal roughness.png-c876929ec6fc1a3b89d5de20c6a5a2ff.s3tc.ctex"]
+dest_files=["res://.godot/imported/starter_Wheel hubs metal roughness.png-c876929ec6fc1a3b89d5de20c6a5a2ff.s3tc.ctex", "res://.godot/imported/starter_Wheel hubs metal roughness.png-c876929ec6fc1a3b89d5de20c6a5a2ff.etc2.ctex"]
 
 [params]
 

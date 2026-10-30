@@ -1,13 +1,14 @@
 # res://scenes/menus/fly_controller.gd  (kept the old file name; this script now handles DRIVING)
 # Lets the player DRIVE the trolley around the map.
 #
-#   W / S ........ accelerate / brake and reverse
-#   A / D ........ steer left / right
-#   Space ........ handbrake
-#   Shift ........ boost
-#   Right-click .. HOLD and move the mouse to look around the trolley
-#   R ............ turn the model 90 degrees (if it drives sideways)
+#   Space ........ one short push forward (press it, then wait 3 seconds to push again)
+#   A ............ turn left
+#   D ............ turn right
 #   Backspace .... put the trolley back at the start
+#   Right-click .. HOLD and move the mouse to look around the trolley (camera only)
+#
+# There are no brakes and no reverse: the trolley slows gradually by coasting,
+# rolls down hills by itself, and keeps slowing on flat ground until it reaches 0.
 #
 # main_menu.gd adds this to the map and gives it the trolley to drive.
 # The trolley is put inside a physics body (CharacterBody3D), so it has gravity,
@@ -15,17 +16,64 @@
 # The model tilts to match the slope of the road under it.
 extends Node3D
 
+# A small, drawn speedometer HUD. Speed is displayed in km/h.
+class SpeedometerDial:
+	extends Control
+
+	var speed_kmh: float = 0.0
+	const MAX_SPEED_KMH: float = 250.0
+
+	func _ready() -> void:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+		custom_minimum_size = Vector2(230.0, 190.0)
+
+	func _draw() -> void:
+		var dial_centre := Vector2(size.x * 0.5, size.y * 0.53)
+		var radius: float = minf(size.x * 0.36, size.y * 0.39)
+		var start_angle: float = deg_to_rad(135.0)
+		var end_angle: float = deg_to_rad(405.0)
+		var font: Font = ThemeDB.fallback_font
+
+		# Dark translucent panel behind the dial.
+		draw_rect(Rect2(Vector2.ZERO, size), Color(0.035, 0.045, 0.06, 0.88), true)
+		draw_arc(dial_centre, radius, start_angle, end_angle, 72, Color(0.28, 0.31, 0.35), 7.0, true)
+
+		# Tick marks and labels from 0 to 250 km/h.
+		for tick in range(26):
+			var ratio: float = float(tick) / 25.0
+			var angle: float = lerpf(start_angle, end_angle, ratio)
+			var outer_point: Vector2 = dial_centre + Vector2(cos(angle), sin(angle)) * (radius + 1.0)
+			var inner_length: float = 10.0 if tick % 5 == 0 else 5.0
+			var inner_point: Vector2 = dial_centre + Vector2(cos(angle), sin(angle)) * (radius - inner_length)
+			draw_line(inner_point, outer_point, Color(1.0, 0.48, 0.05), 2.0 if tick % 5 == 0 else 1.0, true)
+			if tick % 5 == 0:
+				var label_point: Vector2 = dial_centre + Vector2(cos(angle), sin(angle)) * (radius - 24.0)
+				draw_string(font, label_point + Vector2(-12.0, 4.0), str(tick * 10), HORIZONTAL_ALIGNMENT_CENTER, 26.0, 10, Color.WHITE)
+
+		# Needle follows the current speed, capped at the dial's maximum.
+		var speed_ratio: float = clampf(speed_kmh / MAX_SPEED_KMH, 0.0, 1.0)
+		var needle_angle: float = lerpf(start_angle, end_angle, speed_ratio)
+		var needle_tip: Vector2 = dial_centre + Vector2(cos(needle_angle), sin(needle_angle)) * (radius - 20.0)
+		draw_line(dial_centre, needle_tip, Color(1.0, 0.32, 0.08), 3.0, true)
+		draw_circle(dial_centre, 5.0, Color(1.0, 0.48, 0.05))
+
+		var speed_text: String = str(roundi(speed_kmh))
+		draw_string(font, Vector2(dial_centre.x - 38.0, dial_centre.y + 38.0), speed_text, HORIZONTAL_ALIGNMENT_CENTER, 76.0, 23, Color.WHITE)
+		draw_string(font, Vector2(dial_centre.x - 24.0, size.y - 7.0), "KM/H", HORIZONTAL_ALIGNMENT_CENTER, 48.0, 11, Color(0.75, 0.78, 0.82))
+
 # The Node3D to drive. Set by main_menu.gd before this node enters the tree.
 var trolley: Node3D
 
 # ---- Tweak these to taste -------------------------------------------------
-const MAX_SPEED: float = 25.0
-const BOOST_MULTIPLIER: float = 1.6
-const REVERSE_SPEED: float = 8.0
-const ACCELERATION: float = 14.0
-const BRAKE_FORCE: float = 30.0
-const COAST_DRAG: float = 6.0
-const HANDBRAKE_FORCE: float = 45.0
+const PUSH_KEY: Key = KEY_SPACE
+# How much speed one push adds. Small = a short push.
+const PUSH_SPEED_BOOST: float = 7.0
+# Seconds you must wait after a push before you can push again.
+const PUSH_COOLDOWN: float = 3.0
+
+# How quickly the trolley loses speed on flat ground after a push or hill.
+# Lower values mean it coasts for longer. 1.5 gives a gradual, noticeable roll-down.
+const COAST_DRAG: float = 1.5
 
 # ---- Hills ----
 # How hard gravity pulls the trolley down a hill. Higher = rolls away faster.
@@ -37,8 +85,6 @@ const STEEP_FULL_SLOPE: float = 0.5
 const STEEP_BRAKE_MIN: float = 0.12
 # Roads flatter than this don't make the trolley roll.
 const MIN_SLOPE_TO_ROLL: float = 0.05
-# How quickly the trolley slows back to top speed when going too fast.
-const OVERSPEED_DRAG: float = 8.0
 # The fastest the trolley can go when running downhill.
 const MAX_DOWNHILL_SPEED: float = 70.0
 
@@ -74,7 +120,6 @@ const FALLBACK_BOX_SIZE: Vector3 = Vector3(2.0, 1.5, 3.0)
 # 90, -90 or 180 so the model faces the way you are driving.
 const MODEL_FORWARD_OFFSET_DEGREES: float = 90.0
 
-const ROTATE_MODEL_KEY: Key = KEY_R
 const RESET_KEY: Key = KEY_BACKSPACE
 
 # If the trolley falls below this height it is put back at the start.
@@ -88,6 +133,7 @@ var shape_node: CollisionShape3D
 var camera: Camera3D
 var previous_camera: Camera3D
 var hint_label: Label
+var speedometer: SpeedometerDial
 
 var model_offset_degrees: float = MODEL_FORWARD_OFFSET_DEGREES
 var box_centre: Vector3 = Vector3.ZERO
@@ -109,6 +155,10 @@ var look_pitch: float = 0.0
 # False until the map's collision has been registered and the trolley has
 # been set down on the ground.
 var driving_ready: bool = false
+
+# Pushing and cooldown.
+var push_requested: bool = false
+var push_cooldown: float = 0.0
 
 
 func _ready() -> void:
@@ -169,6 +219,16 @@ func _build_hud() -> void:
 	hint_label.add_theme_color_override("font_outline_color", Color.BLACK)
 	hint_label.add_theme_constant_override("outline_size", 6)
 	hud.add_child(hint_label)
+
+	# Keep the speedometer fixed in the top-right corner of the game view.
+	speedometer = SpeedometerDial.new()
+	speedometer.name = "Speedometer"
+	speedometer.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	speedometer.offset_left = -250.0
+	speedometer.offset_right = -20.0
+	speedometer.offset_top = 20.0
+	speedometer.offset_bottom = 210.0
+	hud.add_child(speedometer)
 
 	_update_hint()
 
@@ -325,11 +385,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not key_event.pressed or key_event.echo:
 		return
 
-	if key_event.keycode == ROTATE_MODEL_KEY:
-		model_offset_degrees = fposmod(model_offset_degrees + 90.0, 360.0)
-		if is_instance_valid(trolley) and is_instance_valid(shape_node):
-			_apply_model_offset()
-		_update_hint()
+	if key_event.keycode == PUSH_KEY:
+		# Handled in the next physics step (only if the cooldown is over).
+		push_requested = true
 		get_viewport().set_input_as_handled()
 
 	elif key_event.keycode == RESET_KEY:
@@ -357,6 +415,8 @@ func _reset_to_start() -> void:
 	camera_heading = start_heading
 	look_yaw = 0.0
 	look_pitch = 0.0
+	push_cooldown = 0.0
+	push_requested = false
 	tilt_normal = Vector3.UP
 	body.rotation.y = heading
 	body.global_position = start_position
@@ -384,22 +444,11 @@ func _physics_process(delta: float) -> void:
 		_reset_to_start()
 		return
 
-	var throttle: float = 0.0
-	if Input.is_physical_key_pressed(KEY_W):
-		throttle += 1.0
-	if Input.is_physical_key_pressed(KEY_S):
-		throttle -= 1.0
-
 	var steer: float = 0.0
 	if Input.is_physical_key_pressed(KEY_A):
 		steer += 1.0
 	if Input.is_physical_key_pressed(KEY_D):
 		steer -= 1.0
-
-	var handbrake: bool = Input.is_physical_key_pressed(KEY_SPACE)
-	var top_speed: float = MAX_SPEED
-	if Input.is_physical_key_pressed(KEY_SHIFT):
-		top_speed *= BOOST_MULTIPLIER
 
 	# Current speed along the way the trolley is facing (negative = reversing).
 	var forward: Vector3 = -body.global_transform.basis.z
@@ -426,22 +475,20 @@ func _physics_process(delta: float) -> void:
 				var steep_amount: float = clampf(steepness / STEEP_FULL_SLOPE, 0.0, 1.0)
 				brake_factor = lerpf(1.0, STEEP_BRAKE_MIN, steep_amount)
 
-	if handbrake:
-		speed = move_toward(speed, 0.0, HANDBRAKE_FORCE * brake_factor * delta)
-	elif throttle > 0.0:
-		var rate: float = BRAKE_FORCE * brake_factor if speed < 0.0 else ACCELERATION
-		if speed < top_speed:
-			speed = move_toward(speed, top_speed, rate * delta)
-		else:
-			# Going faster than top speed (rolling downhill): ease back down,
-			# but only weakly on a steep hill.
-			speed = move_toward(speed, top_speed, OVERSPEED_DRAG * brake_factor * delta)
-	elif throttle < 0.0:
-		if speed > 0.5:
-			speed = move_toward(speed, 0.0, BRAKE_FORCE * brake_factor * delta)
-		else:
-			speed = move_toward(speed, -REVERSE_SPEED, ACCELERATION * delta)
-	else:
+	# Push cooldown counts down.
+	push_cooldown = maxf(0.0, push_cooldown - delta)
+
+	# Space was pressed: one short push, then the cooldown starts.
+	if push_requested:
+		push_requested = false
+		if push_cooldown <= 0.0 and body.is_on_floor():
+			speed = maxf(speed, 0.0) + PUSH_SPEED_BOOST
+			push_cooldown = PUSH_COOLDOWN
+
+	# On flat ground (or going uphill), gradually lose speed. A downhill
+	# supplies fresh acceleration, so reaching another hill builds speed again.
+	# There is no timed momentum cut-off: coasting continues smoothly towards 0.
+	if slope_push <= 0.0:
 		speed = move_toward(speed, 0.0, COAST_DRAG * brake_factor * delta)
 
 	# Gravity on the hill speeds the trolley up all by itself, more and more
@@ -468,6 +515,9 @@ func _physics_process(delta: float) -> void:
 
 	body.velocity = new_velocity
 	body.move_and_slide()
+
+	_update_hint()
+	_update_speedometer()
 
 	_update_tilt(delta)
 
@@ -565,12 +615,24 @@ func _get_look_sensitivity() -> float:
 	return LOOK_SENSITIVITY * (setting / 50.0)
 
 
+func _update_speedometer() -> void:
+	if not is_instance_valid(speedometer) or not is_instance_valid(body):
+		return
+
+	# Use horizontal movement speed, converted from metres/second to km/h.
+	speedometer.speed_kmh = Vector2(body.velocity.x, body.velocity.z).length() * 3.6
+	speedometer.queue_redraw()
+
+
 func _update_hint() -> void:
 	if not is_instance_valid(hint_label):
 		return
 
+	var push_text: String = "ready"
+	if push_cooldown > 0.0:
+		push_text = "%.1fs" % push_cooldown
+
 	hint_label.text = (
-		"W/S: drive   A/D: steer   Space: handbrake   Shift: boost   "
-		+ "Hold right-click: look around   "
-		+ "R: turn model (" + str(int(model_offset_degrees)) + ")   Backspace: reset"
+		"Space: push (" + push_text + ")   A: left   D: right   Backspace: reset   "
+		+ "Hold right-click: look around"
 	)
